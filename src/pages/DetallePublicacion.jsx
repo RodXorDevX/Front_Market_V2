@@ -10,7 +10,7 @@ function DetallePublicacion() {
   const [imagenes, setImagenes] = useState([]);
   const [imagenSeleccionada, setImagenSeleccionada] = useState(0);
   const [cantidad, setCantidad] = useState(1);
-  const { agregarAlCarrito, carrito } = useContext(CarritoContext);
+  const { agregarAlCarrito, disminuirCantidad, carrito } = useContext(CarritoContext);
 
   // Mapeo de IDs de categoría a nombres
   const mapCategoriaIdToNombre = {
@@ -49,17 +49,10 @@ function DetallePublicacion() {
     const cantidadTotal = carrito
       .filter((item) => item.id === producto.id)
       .reduce((sum, item) => sum + item.cantidad, 0);
-    setCantidad(cantidadTotal > 0 ? cantidadTotal : 1);
+    setCantidad(cantidadTotal > 0 ? cantidadTotal : 0);
   }, [producto, carrito]);
 
   console.log("Producto agregado:", producto);
-  const handleAgregar = () => {
-    agregarAlCarrito({
-      ...producto,
-      cantidad,
-      vendedor_id: producto.usuario_id || producto.vendedor_id // <- aseguramos que venga este campo
-    });
-  };
 
   if (!producto) return <p>Cargando producto...</p>;
 
@@ -103,19 +96,23 @@ function DetallePublicacion() {
           <p><strong>Stock:</strong> {stock}</p>       
         </div>
 
-    
-
-
         <div className="detalle-cantidad">
           <p><strong>Cantidad:</strong></p>
           <div className="cantidad-control">
-            <button onClick={() => setCantidad(Math.max(1, cantidad - 1))}>-</button>
+            <button 
+              onClick={() => disminuirCantidad(producto.id)}
+              disabled={cantidad === 0}
+            >-</button>
             <span>{cantidad}</span>
-            <button onClick={() => setCantidad(cantidad + 1)}>+</button>
+            <button 
+              onClick={() => agregarAlCarrito({
+                ...producto,
+                vendedor_id: producto.usuario_id || producto.vendedor_id
+              })}
+              disabled={cantidad >= (producto.stock || 0)}
+            >+</button>
           </div>
         </div>
-
-        <button className="btn-agregar" onClick={handleAgregar}>AGREGAR AL CARRITO</button>
       </div>
     </div>
   );
